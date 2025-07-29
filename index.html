@@ -1,27 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <title>Invia Messaggio Telegram</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prenotazione Campetto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f7f7f7;
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="time"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .checkbox-label input {
+      margin-right: 10px;
+    }
+
+    .summary-box {
+      margin-top: 15px;
+      padding: 10px;
+      border-left: 4px solid #27ae60;
+      background: #ecfdf3;
+    }
+  </style>
 </head>
 <body>
-  <h2>Invia un messaggio</h2>
-  <input type="text" id="msg" placeholder="Scrivi un messaggio">
-  <button onclick="inviaMessaggio()">Invia</button>
 
-  <script>
-    function inviaMessaggio() {
-      const messaggio = document.getElementById('msg').value;
+<div class="container">
+  <h2>Prenota il tuo campetto</h2>
 
-      fetch("https://script.google.com/macros/s/AKfycbxy45LMbufZz_s6-adzLVkDZFXTYq80zs1rGa1wxk4r4NIjoHJylbbZIeKGNsUe98Le/exec", {
-        method: "POST",
-        body: JSON.stringify({ message: messaggio }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(res => res.text())
-      .then(data => alert(data));
+  <!-- Step 1 -->
+  <div id="step1">
+    <label for="date">Scegli la data:</label>
+    <input type="date" id="date" name="date">
+    <button onclick="goToStep2()">Avanti</button>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="step2" class="hidden">
+    <label for="name">Nome di chi prenota:</label>
+    <input type="text" id="name" required>
+
+    <label for="dob">Data di nascita:</label>
+    <input type="date" id="dob" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+
+    <label for="phone">Telefono:</label>
+    <input type="tel" id="phone" required>
+
+    <label for="time">Orario:</label>
+    <input type="time" id="time" name="time" required>
+
+    <button onclick="goToStep3()">Avanti</button>
+  </div>
+
+  <!-- Step 3 -->
+  <div id="step3" class="hidden">
+    <label for="players">Nomi dei giocatori:</label>
+    <input type="text" id="players" placeholder="Es. Mario, Luca, Anna...">
+
+    <h3>Dichiarazione di responsabilità</h3>
+    <p>Io, <strong><span id="dichiarazioneNome"></span></strong>, nato/a il <strong><span id="dichiarazioneData"></span></strong>, dichiaro sotto la mia responsabilità di essere maggiorenne e di assumermi la responsabilità per tutti i partecipanti alla prenotazione per il <strong><span id="dichiarazioneDataPrenotazione"></span></strong>.</p>
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="disclaimer" required>
+      Accetto e firmo la dichiarazione di non responsabilità.
+    </label>
+
+    <button onclick="goToStep4()">Procedi al Pagamento</button>
+  </div>
+
+  <!-- Step 4 -->
+  <div id="step4" class="hidden">
+    <h3>Pagamento</h3>
+    <p>Il costo del campetto è di <strong>30€ per 1 ora</strong>.</p>
+    <p>Il pagamento va effettuato tramite bonifico bancario entro le 20:00 del giorno prenotato:</p>
+
+    <ul>
+      <li><strong>Intestatario:</strong> Associazione Sportiva XYZ</li>
+      <li><strong>IBAN:</strong> IT00A1234567890000000000000</li>
+      <li><strong>Causale:</strong> Prenotazione campetto + Nome prenotante</li>
+    </ul>
+
+    <div class="summary-box">
+      <p><strong>I fondi servono per:</strong></p>
+      <ul>
+        <li>Copertura assicurativa base</li>
+        <li>Manutenzione e pulizia del campo</li>
+        <li>Acquisto attrezzatura sportiva</li>
+      </ul>
+    </div>
+
+    <button onclick="submitBooking()">Conferma Prenotazione</button>
+  </div>
+</div>
+
+<script>
+  // Imposta data minima e massima (da domani a 7 giorni avanti)
+  const dateInput = document.getElementById("date");
+  const tomorrow = new Date();
+  const maxBooking = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  maxBooking.setDate(maxBooking.getDate() + 7);
+
+  const yyyy = tomorrow.getFullYear();
+  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dd = String(tomorrow.getDate()).padStart(2, '0');
+  const maxY = maxBooking.getFullYear();
+  const maxM = String(maxBooking.getMonth() + 1).padStart(2, '0');
+  const maxD = String(maxBooking.getDate()).padStart(2, '0');
+
+  dateInput.min = `${yyyy}-${mm}-${dd}`;
+  dateInput.max = `${maxY}-${maxM}-${maxD}`;
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+  function goToStep2() {
+    const selectedDate = new Date(dateInput.value);
+    const nextDay = new Date();
+    const maxDay = new Date();
+    nextDay.setDate(nextDay.getDate() + 1);
+    maxDay.setDate(maxDay.getDate() + 7);
+
+    if (selectedDate < nextDay || selectedDate > maxDay) {
+      alert("Puoi prenotare da domani fino a 7 giorni in avanti.");
+      return;
     }
-  </script>
+
+    document.getElementById("step1").classList.add("hidden");
+    document.getElementById("step2").classList.remove("hidden");
+  }
+
+  function isOver18(dateString) {
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  }
+
+  function goToStep3() {
+    const name = document.getElementById("name").value.trim();
+    const dob = document.getElementById("dob").value;
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const time = document.getElementById("time").value;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9]{8,15}$/;
+
+    if (!name || !dob || !email || !phone || !time) {
+      alert("Compila tutti i campi.");
+      return;
+    }
+
+    if (!isOver18(dob)) {
+      alert("Solo i maggiorenni possono prenotare.");
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      alert("Inserisci un'email valida.");
+      return;
+    }
+
+    if (!phoneRegex.test(phone)) {
+      alert("Inserisci un numero di telefono valido (solo cifre, 8-15 caratteri).");
+      return;
+    }
+
+    if (time < "09:00" || time > "22:00") {
+      alert("L'orario deve essere tra le 09:00 e le 22:00.");
+      return;
+    }
+
+    document.getElementById("dichiarazioneNome").innerText = name;
+    document.getElementById("dichiarazioneData").innerText = dob;
+    document.getElementById("dichiarazioneDataPrenotazione").innerText = dateInput.value;
+
+    document.getElementById("step2").classList.add("hidden");
+    document.getElementById("step3").classList.remove("hidden");
+  }
+
+  function goToStep4() {
+    const disclaimer = document.getElementById("disclaimer").checked;
+    if (!disclaimer) {
+      alert("Devi accettare e firmare la dichiarazione.");
+      return;
+    }
+
+    document.getElementById("step3").classList.add("hidden");
+    document.getElementById("step4").classList.remove("hidden");
+  }
+
+  function submitBooking() {
+    alert("✅ Prenotazione confermata! Ricordati di effettuare il bonifico entro le 20:00 del giorno prenotato.");
+    // Puoi anche fare un redirect a una pagina di ringraziamento se lo desideri:
+    // location.href = "grazie.html";
+  }
+  function submitBooking() {
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+  const players = document.getElementById("players").value;
+
+  fetch("https://script.google.com/macros/s/AKfycbysdVxkKQgUbtohHPGc_-3ZjMSZ0-oTBZeZVN_KKXlOK2j4eLhzbUpn3Dy0FUf5oawP/exec", {
+    method: "POST",
+    body: JSON.stringify({ date, time, name, email, phone, players }),
+    headers: { "Content-Type": "application/json" },
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ Prenotazione confermata! Controlla la tua email.");
+        location.reload();
+      } else {
+        alert("⚠️ Questo orario è già stato prenotato. Scegli un altro.");
+      }
+    })
+    .catch(err => {
+      console.error("Errore:", err);
+      alert("Si è verificato un errore durante l'invio. Riprova.");
+    });
+}
+
+</script>
+
 </body>
 </html>
