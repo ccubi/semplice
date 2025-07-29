@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-                                  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Prenotazione Campetto</title>
@@ -251,38 +251,54 @@
     document.getElementById("step3").classList.add("hidden");
     document.getElementById("step4").classList.remove("hidden");
   }
-const supabase = supabase.createClient(
-  'https://vspllbarayepqdxsicds.supabase.co', // cambia
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzcGxsYmFyYXllcHFkeHNpY2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4MDg3MDUsImV4cCI6MjA2OTM4NDcwNX0.YtS9NXPfTp3km0pwHwe_WS0CZ7w0C7ddgBsLFGfryQoY'                           // cambia
-);
 
-async function submitBooking() {
-  const date = document.getElementById("date").value;
-  const time = document.getElementById("time").value;
-  const name = document.getElementById("name").value.trim();
-  const dob = document.getElementById("dob").value;
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const players = document.getElementById("players").value.trim();
+  const supabase = supabase.createClient(
+    'https://vspllbarayepqdxsicds.supabase.co', // cambia con il tuo URL
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzcGxsYmFyYXllcHFkeHNpY2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4MDg3MDUsImV4cCI6MjA2OTM4NDcwNX0.YtS9NXPfTp3km0pwHwe_WS0CZ7w0C7ddgBsLFGfryQoY' // cambia con la tua anon key
+  );
 
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert([{ date, time, name, email, phone, players }]);
+  async function submitBooking() {
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const name = document.getElementById("name").value.trim();
+    const dob = document.getElementById("dob").value;
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const players = document.getElementById("players").value.trim();
 
-  if (error) {
-    if (error.code === '23505') {
+    // Controllo se la prenotazione esiste già
+    const { data: existing, error: checkError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date)
+      .eq('time', time)
+      .limit(1);
+
+    if (checkError) {
+      alert("Errore nel controllo disponibilità, riprova.");
+      return;
+    }
+
+    if (existing.length > 0) {
       alert("❌ Questo orario è già stato prenotato!");
-    } else {
+      return;
+    }
+
+    // Inserisci la prenotazione
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([{ date, time, name, dob, email, phone, players }]);
+
+    if (error) {
       console.error(error);
       alert("Errore nel salvataggio. Riprova più tardi.");
+      return;
     }
-    return;
+
+    alert("✅ Prenotazione registrata con successo!");
+    location.reload();
   }
 
-  alert("✅ Prenotazione registrata con successo!");
-  location.reload();
-}
-
-  
+</script>
 </body>
 </html>
