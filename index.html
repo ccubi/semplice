@@ -252,24 +252,18 @@
   }
 
   function submitBooking() {
-    alert("✅ Prenotazione confermata! Ricordati di effettuare il bonifico entro le 20:00 del giorno prenotato.");
-    // Puoi anche fare un redirect a una pagina di ringraziamento se lo desideri:
-    // location.href = "grazie.html";
-  }
-  
-function submitBooking() {
-  const date = document.getElementById("date").value;
-  const time = document.getElementById("time").value;
-  const name = document.getElementById("name").value.trim();
-  const dob = document.getElementById("dob").value;
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const players = document.getElementById("players").value.trim();
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const name = document.getElementById("name").value.trim();
+    const dob = document.getElementById("dob").value;
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const players = document.getElementById("players").value.trim();
 
-  const formData = {
-    name: name,
-    email: email,
-    message: `
+    const formData = {
+      name: name,
+      email: email,
+      message: `
 Prenotazione Campetto:
 
 📅 Data: ${date}
@@ -279,29 +273,29 @@ Prenotazione Campetto:
 📞 Telefono: ${phone}
 👥 Giocatori: ${players}
 `
-  };
+    };
 
-  fetch("https://formspree.io/f/xovlwzvy", {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(formData)
-  })
-  .then(response => {
-    if (response.ok) {
-      alert("✅ Prenotazione inviata! Riceverai una conferma via email.");
-      location.reload();
-    } else {
-      alert("❌ Errore durante l'invio. Riprova più tardi.");
-    }
-  })
-  .catch(error => {
-    console.error(error);
-    alert("❌ Errore durante la richiesta. Controlla la connessione.");
-  });
-}
+    fetch("https://formspree.io/f/xovlwzvy", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => {
+      if (response.ok) {
+        alert("✅ Prenotazione inviata! Ricordati di effettuare il bonifico entro le 20:00 del giorno prenotato.");
+        location.reload(); // o puoi fare redirect
+      } else {
+        alert("❌ Errore durante l'invio. Riprova più tardi.");
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      alert("❌ Errore durante la richiesta. Controlla la connessione.");
+    });
+  }
 </script>
 
 </body>
