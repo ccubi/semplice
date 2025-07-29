@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invia Messaggio Telegram</title>
+</head>
+<body>
+  <h2>Invia un messaggio</h2>
+  <input type="text" id="msg" placeholder="Scrivi un messaggio">
+  <button onclick="inviaMessaggio()">Invia</button>
+
+  <script>
+    function inviaMessaggio() {
+      const messaggio = document.getElementById('msg').value;
+
+      fetch("https://script.google.com/macros/s/AKfycbxy45LMbufZz_s6-adzLVkDZFXTYq80zs1rGa1wxk4r4NIjoHJylbbZIeKGNsUe98Le/exec", {
+        method: "POST",
+        body: JSON.stringify({ message: messaggio }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.text())
+      .then(data => alert(data));
+    }
+  </script>
+</body>
+</html>
