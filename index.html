@@ -258,46 +258,30 @@
   );
 
   async function submitBooking() {
-    const date = document.getElementById("date").value;
-    const time = document.getElementById("time").value;
-    const name = document.getElementById("name").value.trim();
-    const dob = document.getElementById("dob").value;
-    const email = document.getElementById("email").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const players = document.getElementById("players").value.trim();
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const players = document.getElementById("players").value.trim();
 
-    // Controllo se la prenotazione esiste già
-    const { data: existing, error: checkError } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date)
-      .eq('time', time)
-      .limit(1);
+  const data = { date, time, name, email, phone, players };
 
-    if (checkError) {
-      alert("Errore nel controllo disponibilità, riprova.");
-      return;
-    }
+  const response = await fetch("https://script.google.com/macros/s/AKfycbysdVxkKQgUbtohHPGc_-3ZjMSZ0-oTBZeZVN_KKXlOK2j4eLhzbUpn3Dy0FUf5oawP/exec", {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" }
+  });
 
-    if (existing.length > 0) {
-      alert("❌ Questo orario è già stato prenotato!");
-      return;
-    }
+  const result = await response.json();
 
-    // Inserisci la prenotazione
-    const { data, error } = await supabase
-      .from('bookings')
-      .insert([{ date, time, name, dob, email, phone, players }]);
-
-    if (error) {
-      console.error(error);
-      alert("Errore nel salvataggio. Riprova più tardi.");
-      return;
-    }
-
+  if (result.result === "success") {
     alert("✅ Prenotazione registrata con successo!");
     location.reload();
+  } else {
+    alert("❌ Errore durante la prenotazione, riprova.");
   }
+}
 
 </script>
 </body>
